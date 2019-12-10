@@ -207,7 +207,7 @@ dispatcher.onGet('/health', function (req, res) {
         res.end(JSON.stringify({status: 'Ratings is super healthy'}))
     } else {
         res.writeHead(500, {'Content-type': 'application/json'})
-        res.end(JSON.stringify({status: 'Ratings is not healthy'}))
+        res.end(JSON.stringify({status: 'Ratings is feeling unwell'}))
     }
 })
 
