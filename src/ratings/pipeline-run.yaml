@@ -1,0 +1,20 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: ratings-pipeline-run-{commit}
+spec:
+  serviceAccountName: ecr-service-acct
+  pipelineRef:
+    name: generic-pipeline
+  resources:
+    - name: source-repo
+      resourceRef:
+        name: bookinfo-git
+    - name: service-image
+      resourceSpec:
+        type: image
+        params:
+        - name: url
+          value: {IMAGE_TAG}
+                    
