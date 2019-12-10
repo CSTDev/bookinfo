@@ -2,11 +2,18 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
-  name: ratings-pipeline-run-{commit}
+  name: ratings-pipeline-run
 spec:
   serviceAccountName: ecr-service-acct
   pipelineRef:
     name: generic-pipeline
+  params:
+    - name: pathToDockerFile
+      value: ./src/ratings/Dockerfile
+    - name: pathToContext
+      value: ./src/ratings/
+    - name: deploymentYamlPath
+      value: ./platform/kube/bookinfo-ratings.yaml
   resources:
     - name: source-repo
       resourceRef:
@@ -16,5 +23,5 @@ spec:
         type: image
         params:
         - name: url
-          value: {IMAGE_TAG}
+          value: <IMAGE-TAG>
                     
