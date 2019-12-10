@@ -24,7 +24,7 @@ spec:
       name: build-docker-image-from-git-source
     params:
       - name: pathToDockerFile
-         value: "$(params.pathToDockerFile)"
+        value: "$(params.pathToDockerFile)"
       - name: pathToContext
         value: "$(params.pathToContext)"
     resources:
