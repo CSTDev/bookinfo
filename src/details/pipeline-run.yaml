@@ -12,8 +12,6 @@ spec:
       value: "/workspace/docker-source/src/details/Dockerfile"
     - name: "pathToContext"
       value: "/workspace/docker-source/src/details/"
-    - name: "deploymentYamlPath"
-      value: "/workspace/source/platform/kube/bookinfo-details.yaml"
   resources:
     - name: source-repo
       resourceRef:
