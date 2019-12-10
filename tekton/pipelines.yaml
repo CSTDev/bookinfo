@@ -1,0 +1,57 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: generic-pipeline
+spec:
+  params:
+    - name: pathToDockerFile
+      default: 'Dockerfile'
+      type: string
+      description: Path to the dockerfile to build
+    - name: pathToContext
+      default: '.'
+      type: string
+      description: Path to the build context
+  resources:
+    - name: source-repo
+      type: git
+    - name: service-image
+      type: image
+  tasks:
+  - name: build-ratings-service
+    taskRef: 
+      name: build-docker-image-from-git-source
+    params:
+      - name: pathToDockerFile
+         value: "$(params.pathToDockerFile)"
+      - name: pathToContext
+        value: "$(params.pathToContext)"
+    resources:
+      inputs: 
+        - name: docker-source
+          resource: source-repo
+      outputs:
+        - name: builtImage
+          resource: service-image
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: build-pipeline
+spec:
+  resources:
+    - name: source
+      type: git
+    - name: image
+      type: image
+  tasks:
+  - name: spawn-service-builds
+    taskRef: 
+      name: spawn-service-builds
+    resources:
+      inputs: 
+        - name: source
+          resource: source
+        - name: image
+          resource: image
