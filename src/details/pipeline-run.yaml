@@ -8,6 +8,8 @@ spec:
   pipelineRef:
     name: generic-pipeline
   params:
+    - name: serviceName
+      value: Details
     - name: "pathToDockerFile"
       value: "/workspace/source-repo/src/details/Dockerfile"
     - name: "pathToContext"

@@ -13,13 +13,15 @@ spec:
       default: '.'
       type: string
       description: Path to the build context
+    - name: serviceName
+      description: Name of project being built
   resources:
     - name: source-repo
       type: git
     - name: service-image
       type: image
   tasks:
-  - name: build-ratings-service
+  - name: build-service
     taskRef: 
       name: build-docker-image-from-git-source
     params:
@@ -34,6 +36,14 @@ spec:
       outputs:
         - name: builtImage
           resource: service-image
+  - name: notify-build-success
+    taskRef:
+      name: notify-slack
+    params:
+      - name: message
+        value: $(params.serviceName) built
+    runAfter: 
+      - build-service
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline

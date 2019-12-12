@@ -55,3 +55,24 @@ spec:
       command: ["./build-helper.sh"]
       args:
         - "$(inputs.resources.image.url)"
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: notify-slack
+spec:
+  inputs:
+    params:
+      - name: message
+        type: string
+  steps:
+    - name: send-notification
+      image: technosophos/slack-notify
+      env:
+        - name: SLACK_WEBHOOK
+          valueFrom: 
+            secretKeyRef:
+              name: slackwebhookurl
+              key: url
+        - name: SLACK_MESSAGE
+          value: $(inputs.params.message)
