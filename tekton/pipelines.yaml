@@ -29,7 +29,7 @@ spec:
         value: "$(params.pathToContext)"
     resources:
       inputs: 
-        - name: docker-source
+        - name: source-repo
           resource: source-repo
       outputs:
         - name: builtImage

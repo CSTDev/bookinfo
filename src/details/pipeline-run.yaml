@@ -9,9 +9,9 @@ spec:
     name: generic-pipeline
   params:
     - name: "pathToDockerFile"
-      value: "/workspace/docker-source/src/details/Dockerfile"
+      value: "/workspace/source-repo/src/details/Dockerfile"
     - name: "pathToContext"
-      value: "/workspace/docker-source/src/details/"
+      value: "/workspace/source-repo/src/details/"
   resources:
     - name: source-repo
       resourceRef:
