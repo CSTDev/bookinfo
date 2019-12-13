@@ -2,7 +2,11 @@
 IMAGE_URL=$1
 HASH=`git rev-parse --short HEAD`
 mkdir pipelineruns
+<<<<<<< HEAD
 git fetch --unshallow
+=======
+git fetch --depth=2 origin
+>>>>>>> Remove duplicate rbacs?
 directories=`git diff --dirstat=files,0 HEAD~1 | sed 's/[0-9.]\+% //g' | uniq | sort -r`
 for dir in $directories; do
   echo $dir
