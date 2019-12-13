@@ -35,6 +35,8 @@ metadata:
   labels:
     app: ratings
     version: v1
+  annotations:
+    flux.weave.works/automated: "true"
 spec:
   replicas: 1
   selector:
