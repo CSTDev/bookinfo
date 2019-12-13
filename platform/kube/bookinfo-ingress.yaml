@@ -20,7 +20,7 @@ kind: Ingress
 metadata:
   name: gateway
   annotations:
-    kubernetes.io/ingress.class: "istio"
+    kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
   - http:
