@@ -76,3 +76,87 @@ spec:
               key: url
         - name: SLACK_MESSAGE
           value: $(inputs.params.message)
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: create-environment
+spec:
+  inputs:
+    params:
+      - name: namespace
+        type: string
+      - name: giturl
+        type: string
+      - name: pathToManifests
+        type: string
+  steps:
+    - name: create-namespace
+      image: bitnami/kubectl:latest
+      args: 
+        - "create"
+        - "namespace"
+        - "$(inputs.params.namespace)"
+    - name: copy-in-git-secret
+      image: bitnami/kubectl:latest
+      command: ["/bin/sh"]
+      args: 
+        - "-c"
+        - "\"kubectl get secret/flux-git-auth --namespace=tekton-pipelines -oyaml | grep -v '^\\s*namespace:\\s' | kubectl apply --namespace=$(inputs.params.namespace) -f -\""
+    - name: add-flux
+      image: alpine/helm:3.0.1
+      args: 
+        - repo
+        - add
+        - fluxcd
+        - https://charts.fluxcd.io
+    - name: deploy-flux
+      image: alpine/helm:3.0.1
+      args:
+        - upgrade
+        - "--install"
+        - flux-$(inputs.params.namespace)
+        - "--namespace"
+        - $(inputs.params.namespace)
+        - --set 
+        - git.url=$(inputs.params.giturl)
+        - --set 
+        - git.path=$(inputs.params.pathToManifests)
+        - --set
+        - clusterRole.create=false
+        - --set
+        - git.pollInterval=60s
+        - --set
+        - git.branch=flux
+        - --set
+        - env.secretName=flux-git-auth
+        - fluxcd/flux
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: delete-namespace
+spec:
+  inputs:
+    params:
+      - name: namespace
+        type: string
+  steps:
+    - name: delete-namespace
+      image: bitnami/kubectl:latest
+      args: 
+        - "delete"
+        - "namespace"
+        - "$(inputs.params.namespace)"
+    - name: delete-flux-crd
+      image: bitnami/kubectl:latest
+      args:
+        - "delete"
+        - clusterrole
+        - flux-$(inputs.params.namespace)-crd
+    - name: delete-flux-crb
+      image: bitnami/kubectl:latest
+      args:
+        - "delete"
+        - clusterrolebinding
+        - flux-$(inputs.params.namespace)
