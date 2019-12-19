@@ -333,7 +333,7 @@ def getProductDetails(product_id, headers):
         return 200, res.json()
     else:
         status = res.status_code if res is not None and res.status_code else 500
-        return status, {'error': 'Sorry, product details are currently unavailable for this book.'}
+        return status, {'error': 'Uh Oh, product details are currently unavailable for this book.'}
 
 
 def getProductReviews(product_id, headers):
