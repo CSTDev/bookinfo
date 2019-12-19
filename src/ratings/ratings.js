@@ -204,17 +204,10 @@ dispatcher.onGet(/^\/ratings\/[0-9]*/, function (req, res) {
 dispatcher.onGet('/health', function (req, res) {
     if (healthy) {
         res.writeHead(200, {'Content-type': 'application/json'})
-<<<<<<< HEAD
         res.end(JSON.stringify({status: 'Ratings is healthy'}))
     } else {
         res.writeHead(500, {'Content-type': 'application/json'})
         res.end(JSON.stringify({status: 'Ratings is unhealthy'}))
-=======
-        res.end(JSON.stringify({status: 'Ratings is super healthy'}))
-    } else {
-        res.writeHead(500, {'Content-type': 'application/json'})
-        res.end(JSON.stringify({status: 'Ratings is feeling unwell'}))
->>>>>>> Remove duplicate rbacs?
     }
 })
 

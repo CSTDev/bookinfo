@@ -1,12 +1,10 @@
 #! /bin/sh
 IMAGE_URL=$1
-HASH=`git rev-parse --short HEAD`
-mkdir pipelineruns
-<<<<<<< HEAD
+BRANCH_REF=$2
+BRANCH=`echo ${BRANCH_REF##*/}`
+git checkout $BRANCH
 git fetch --unshallow
-=======
-git fetch --depth=2 origin
->>>>>>> Remove duplicate rbacs?
+HASH=`git rev-parse --short HEAD`
 directories=`git diff --dirstat=files,0 HEAD~1 | sed 's/[0-9.]\+% //g' | uniq | sort -r`
 for dir in $directories; do
   echo $dir
@@ -22,6 +20,7 @@ for dir in $directories; do
     echo "got a pipeline run will deploy"
     yq w -i $file "spec.resources[1].resourceSpec.params[0].value" $IMAGE_URL/$SERVICE:$HASH
     yq w -i $file "metadata.name" $SERVICE-pipeline-run-$HASH-$RANDOM
+    yq w -i $file "spec.resources[0].resourceSpec.params[0].value" $BRANCH
     cat $file
     kubectl apply -f $file   
   else

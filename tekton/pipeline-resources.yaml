@@ -10,3 +10,5 @@ spec:
       value: master
     - name: url
       value: https://github.com/CSTDev/bookinfo
+    - name: depth
+      value: 2

@@ -16,8 +16,13 @@ spec:
       value: "/workspace/source-repo/src/productpage/"
   resources:
     - name: source-repo
-      resourceRef:
-        name: bookinfo-git
+      resourceSpec:
+        type: git
+        params:
+        - name: revision
+          value: <branch>
+        - name: url
+          value: https://github.com/CSTDev/bookinfo
     - name: service-image
       resourceSpec:
         type: image
