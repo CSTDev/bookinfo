@@ -1,0 +1,24 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: create-env
+spec:
+  params:
+    - name: eventtype
+  check:
+    image: alpine
+    command: ["/bin/sh"]
+    args: ["-c", "test $(params.eventtype) = opened"]
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: delete-env
+spec:
+  params:
+    - name: eventtype
+  check:
+    image: alpine
+    command: ["/bin/sh"]
+    args: ["-c", "test $(params.eventtype) = closed "]

@@ -16,6 +16,11 @@ metadata:
 secrets:
   - name: containerregcred
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ecr-secret-acct
+---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -69,3 +74,67 @@ roleRef:
   kind: ClusterRole #this must be Role or ClusterRole
   name: deploy-resources # this must match the name of the Role or ClusterRole you wish to bind to
   apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: 
+  name: ecr-secret-editor
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["delete", "create", "patch"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: edit-ecr-secret
+subjects:
+- kind: ServiceAccount
+  name: ecr-secret-acct
+  namespace: tekton-pipelines
+roleRef:
+  kind: Role
+  name: ecr-secret-editor
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: refresh-ecr-creds
+spec:
+  schedule: "* */8 * * *"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2  
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          serviceAccountName: ecr-secret-acct
+          terminationGracePeriodSeconds: 0
+          restartPolicy: Never
+          containers:
+          - name: kubectl
+            imagePullPolicy: IfNotPresent
+            image: frekele/aws-ecr-kubectl:latest
+            envFrom:
+              - secretRef:
+                  name: aws-settings
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+              DOCKER_USER=AWS
+              DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
+              kubectl delete secret containerregcred || true
+              kubectl create secret docker-registry containerregcred \
+              --docker-server=$DOCKER_REGISTRY_SERVER \
+              --docker-username=$DOCKER_USER \
+              --docker-password=$DOCKER_PASSWORD \
+              --docker-email=none
+              kubectl patch serviceaccount ecr-service-acct -p '{"imagePullSecrets":[{"name":"containerregcred"}]}'
+  
