@@ -2,7 +2,7 @@
 IMAGE_URL=$1
 HASH=`git rev-parse --short HEAD`
 mkdir pipelineruns
-git fetch --depth=2 origin
+git fetch --unshallow
 git log
 directories=`git diff --dirstat=files,0 HEAD~1 | sed 's/[0-9.]\+% //g' | uniq | sort -r`
 for dir in $directories; do
