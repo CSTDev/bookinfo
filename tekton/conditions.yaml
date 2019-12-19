@@ -3,6 +3,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Condition
 metadata:
   name: create-env
+  labels:
+    app: bookinfo
 spec:
   params:
     - name: eventtype
@@ -15,6 +17,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Condition
 metadata:
   name: delete-env
+  labels:
+    app: bookinfo
 spec:
   params:
     - name: eventtype
@@ -22,3 +26,4 @@ spec:
     image: alpine
     command: ["/bin/sh"]
     args: ["-c", "test $(params.eventtype) = closed "]
+    

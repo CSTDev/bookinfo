@@ -3,6 +3,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: build-docker-image-from-git-source
+  labels:
+    app: bookinfo
 spec:
   inputs:
     resources:
@@ -41,6 +43,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: spawn-service-builds
+  labels:
+    app: bookinfo
 spec:
   inputs:
     params:
@@ -64,6 +68,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: notify-slack
+  labels:
+    app: bookinfo
 spec:
   inputs:
     params:
@@ -85,6 +91,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: create-environment
+  labels:
+    app: bookinfo
 spec:
   inputs:
     params:
@@ -94,19 +102,21 @@ spec:
         type: string
       - name: pathToManifests
         type: string
+      - name: branch
+        type: string
   steps:
     - name: create-namespace
-      image: bitnami/kubectl:latest
+      image: bitnami/kubectl:1.15
       args: 
         - "create"
         - "namespace"
         - "$(inputs.params.namespace)"
     - name: copy-in-git-secret
-      image: bitnami/kubectl:latest
-      command: ["/bin/sh"]
+      image: bitnami/kubectl:1.15
+      command: ["sh"]
       args: 
         - "-c"
-        - "\"kubectl get secret/flux-git-auth --namespace=tekton-pipelines -oyaml | grep -v '^\\s*namespace:\\s' | kubectl apply --namespace=$(inputs.params.namespace) -f -\""
+        - "kubectl get secret/flux-git-auth --namespace=tekton-pipelines -oyaml | grep -v '^\\s*namespace:\\s' | kubectl apply --namespace=$(inputs.params.namespace) -f -"
     - name: add-flux
       image: alpine/helm:3.0.1
       args: 
@@ -123,7 +133,7 @@ spec:
         - "--namespace"
         - $(inputs.params.namespace)
         - --set 
-        - git.url=$(inputs.params.giturl)
+        - git.url=https://$(GIT_AUTHUSER):$(GIT_AUTHKEY)@github.com/$(inputs.params.giturl).git
         - --set 
         - git.path=$(inputs.params.pathToManifests)
         - --set
@@ -131,7 +141,7 @@ spec:
         - --set
         - git.pollInterval=60s
         - --set
-        - git.branch=flux
+        - git.branch=$(inputs.params.branch)
         - --set
         - env.secretName=flux-git-auth
         - fluxcd/flux
@@ -140,6 +150,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
   name: delete-namespace
+  labels:
+    app: bookinfo
 spec:
   inputs:
     params:
@@ -147,19 +159,19 @@ spec:
         type: string
   steps:
     - name: delete-namespace
-      image: bitnami/kubectl:latest
+      image: bitnami/kubectl:1.15
       args: 
         - "delete"
         - "namespace"
         - "$(inputs.params.namespace)"
     - name: delete-flux-crd
-      image: bitnami/kubectl:latest
+      image: bitnami/kubectl:1.15
       args:
         - "delete"
         - clusterrole
         - flux-$(inputs.params.namespace)-crd
     - name: delete-flux-crb
-      image: bitnami/kubectl:latest
+      image: bitnami/kubectl:1.15
       args:
         - "delete"
         - clusterrolebinding

@@ -3,6 +3,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
   name: generic-pipeline
+  labels:
+    app: bookinfo
 spec:
   params:
     - name: pathToDockerFile
@@ -49,6 +51,8 @@ apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
   name: build-pipeline
+  labels:
+    app: bookinfo
 spec:
   params:
     - name: eventtype
@@ -84,12 +88,15 @@ apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
   name: pr-pipeline
+  labels:
+    app: bookinfo
 spec:
   params:
     - name: eventtype
     - name: pr-number
     - name: giturl
     - name: pathToManifests
+    - name: branch
   tasks:
   - name: create-environment
     taskRef:
@@ -101,6 +108,8 @@ spec:
         value: $(params.giturl)
       - name: pathToManifests
         value: $(params.pathToManifests)
+      - name: branch
+        value: $(params.branch)
     conditions:
       - conditionRef: create-env
         params:
