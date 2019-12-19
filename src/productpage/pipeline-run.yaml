@@ -2,18 +2,18 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
-  name: ratings-pipeline-run
+  name: productpage-pipeline-run
 spec:
   serviceAccountName: ecr-service-acct
   pipelineRef:
     name: generic-pipeline
   params:
     - name: serviceName
-      value: Ratings
+      value: productpage
     - name: "pathToDockerFile"
-      value: "/workspace/source-repo/src/ratings/Dockerfile"
+      value: "/workspace/source-repo/src/productpage/Dockerfile"
     - name: "pathToContext"
-      value: "/workspace/source-repo/src/ratings/"
+      value: "/workspace/source-repo/src/productpage/"
   resources:
     - name: source-repo
       resourceSpec:
@@ -29,4 +29,3 @@ spec:
         params:
         - name: url
           value: <IMAGE-TAG>
-                    

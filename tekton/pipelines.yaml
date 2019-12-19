@@ -50,6 +50,11 @@ kind: Pipeline
 metadata:
   name: build-pipeline
 spec:
+  params:
+    - name: eventtype
+    - name: branch
+    - name: pusher
+    - name: latestcommit
   resources:
     - name: source
       type: git
@@ -59,9 +64,62 @@ spec:
   - name: spawn-service-builds
     taskRef: 
       name: spawn-service-builds
+    params:
+      - name: branch-ref
+        value: $(params.branch)
     resources:
       inputs: 
         - name: source
           resource: source
         - name: image
           resource: image
+  - name: notify-build-invoked
+    taskRef:
+      name: notify-slack
+    params:
+      - name: message
+        value: "$(params.pusher) triggered a build on $(params.branch) with a $(params.eventtype). Commit: $(params.latestcommit)"
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: pr-pipeline
+spec:
+  params:
+    - name: eventtype
+    - name: pr-number
+    - name: giturl
+    - name: pathToManifests
+  tasks:
+  - name: create-environment
+    taskRef:
+      name: create-environment
+    params:
+      - name: namespace
+        value: pr-$(params.pr-number)
+      - name: giturl
+        value: $(params.giturl)
+      - name: pathToManifests
+        value: $(params.pathToManifests)
+    conditions:
+      - conditionRef: create-env
+        params:
+          - name: eventtype
+            value: $(params.eventtype)
+  - name: delete-environment
+    taskRef:
+      name: delete-namespace
+    conditions:
+      - conditionRef: delete-env
+        params:
+          - name: eventtype
+            value: $(params.eventtype)
+    params:
+      - name: namespace
+        value: pr-$(params.pr-number)
+  - name: notify-build-invoked
+    taskRef:
+      name: notify-slack
+    params:
+      - name: message
+        value: "$(params.eventtype) the environment for PR-$(params.pr-number)"
