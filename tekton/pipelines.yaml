@@ -64,6 +64,9 @@ spec:
   - name: spawn-service-builds
     taskRef: 
       name: spawn-service-builds
+    params:
+      - name: branch-ref
+        value: $(params.branch)
     resources:
       inputs: 
         - name: source

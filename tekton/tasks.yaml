@@ -43,6 +43,9 @@ metadata:
   name: spawn-service-builds
 spec:
   inputs:
+    params:
+      - name: branch-ref
+        type: string
     resources:
       - name: source
         targetPath: .
@@ -55,6 +58,7 @@ spec:
       command: ["./build-helper.sh"]
       args:
         - "$(inputs.resources.image.url)"
+        - "$(inputs.params.branch-ref)"
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task
