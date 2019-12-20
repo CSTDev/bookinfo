@@ -36,7 +36,7 @@ rules:
 # Permissions to create resources in associated TriggerTemplates
 - apiGroups: ["tekton.dev"]
   resources: ["pipelineruns", "pipelineresources", "taskruns"]
-  verbs: ["create", "patch"]
+  verbs: ["create", "patch", "delete","list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -137,4 +137,30 @@ spec:
               --docker-password=$DOCKER_PASSWORD \
               --docker-email=none
               kubectl patch serviceaccount ecr-service-acct -p '{"imagePullSecrets":[{"name":"containerregcred"}]}'
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: tidy-old-pipeline-runs
+spec:
+  schedule: "0 4 * * *"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2  
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          serviceAccountName: trigger-service-acct
+          terminationGracePeriodSeconds: 0
+          restartPolicy: Never
+          containers:
+          - name: kubectl
+            imagePullPolicy: IfNotPresent
+            image: bitnami/kubectl:1.15
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              kubectl get pipelineruns -o go-template --template '{{range .items}}{{.metadata.name}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}' | awk -v date="$(date -d "@$(($(date +%s) - 259200))" +%Y-%m-%d)" '$2 < date {print $1}' | xargs --no-run-if-empty kubectl delete pipelinerun
   
