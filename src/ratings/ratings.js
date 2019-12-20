@@ -226,7 +226,7 @@ function getLocalReviewsSuccessful(res, productId) {
 
 function getLocalReviewsServiceUnavailable(res) {
   res.writeHead(503, {'Content-type': 'application/json'})
-  res.end(JSON.stringify({error: 'Service unavailable'}))
+  res.end(JSON.stringify({error: 'Service is unavailable'}))
 }
 
 function getLocalReviews (productId) {
